@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhoneControl Enterprise — Boshqaruv Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/custom.css">
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
+            #receiptPrintArea { position: fixed; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex pb-20 md:pb-0">
+
+    <!-- DESKTOP YIG'ILUVCHI SIDEBAR (iPhone Frosted Glass) -->
+    <aside id="mainSidebar" class="w-64 glass-panel border-r border-slate-800/60 hidden md:flex flex-col justify-between p-5 fixed h-full z-20 transition-all duration-300">
+        <div>
+            <!-- Emblema + Yig'ish tugmasi (3-rasmdagi muammo tuzatildi) -->
+            <div class="sidebar-header-row flex items-center justify-between mb-7 px-1">
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/25">
+                        <i data-lucide="smartphone" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div class="logo-text-group">
+                        <span class="font-extrabold text-lg tracking-tight block leading-none">PhoneControl</span>
+                        <svg width="95" height="10" viewBox="0 0 110 12" fill="none" class="mt-0.5">
+                            <path d="M2 3C32 11 75 11 104 2" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M99 0L106 2L102 8" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <button onclick="toggleSidebar()" class="p-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white shrink-0 transition" title="Menyuni yig'ish / ochish">
+                    <i data-lucide="panel-left-close" id="sidebarToggleIcon" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('inventory')" data-tab="inventory" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium bg-blue-600/20 text-cyan-400 border border-blue-500/30 transition" title="Ombor va IMEI">
+                    <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+                    <span class="sidebar-label truncate">Ombor va IMEI</span>
+                </button>
+                <button onclick="switchTab('approvals')" data-tab="approvals" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition" title="So'rovlar">
+                    <span class="flex items-center gap-3 overflow-hidden">
+                        <i data-lucide="bell-ring" class="w-4 h-4 shrink-0"></i>
+                        <span class="sidebar-label truncate" id="approvalsMenuLabel">So'rovlar</span>
+                    </span>
+                    <span id="approvalBadge" class="sidebar-label bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded-full font-bold shrink-0">0</span>
+                </button>
+                <button onclick="switchTab('sales')" data-tab="sales" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition" title="Sotuvlar tarixi">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 shrink-0"></i>
+                    <span class="sidebar-label truncate">Sotuvlar tarixi</span>
+                </button>
+                <button onclick="switchTab('debts')" data-tab="debts" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition" title="Nasiya / Qarzlar">
+                    <span class="flex items-center gap-3 overflow-hidden">
+                        <i data-lucide="wallet" class="w-4 h-4 shrink-0"></i>
+                        <span class="sidebar-label truncate">Nasiya / Qarzlar</span>
+                    </span>
+                    <span id="debtBadge" class="sidebar-label bg-rose-500/20 text-rose-400 text-xs px-2 py-0.5 rounded-full font-semibold shrink-0">0</span>
+                </button>
+                <button onclick="switchTab('analytics')" data-tab="analytics" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition" title="Statistika & AI Tahlil">
+                    <i data-lucide="sparkles" class="w-4 h-4 shrink-0 text-amber-400"></i>
+                    <span class="sidebar-label truncate">Statistika & AI Tahlil</span>
+                </button>
+                <button onclick="switchTab('staff')" data-tab="staff" id="adminStaffMenu" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-800/50 transition" title="Xodimlar & Faollik">
+                    <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
+                    <span class="sidebar-label truncate">Xodimlar & Faollik</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Foydalanuvchi Profili -->
+        <div class="pt-4 border-t border-slate-800/60 space-y-2">
+            <div onclick="openProfileModal()" class="profile-trigger flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800/50 cursor-pointer transition group" title="Profilni tahrirlash">
+                <div id="sidebarAvatarBox" class="w-9 h-9 rounded-full bg-slate-800 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-sm overflow-hidden shrink-0">
+                    A
+                </div>
+                <div class="overflow-hidden flex-1 profile-text-group">
+                    <p class="text-sm font-semibold truncate group-hover:text-cyan-400 transition" id="userNameDisplay">Yuklanmoqda...</p>
+                    <p class="text-[11px] text-slate-400 truncate" id="userRoleDisplay">Profil sozlamalari</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-slate-800/70 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 text-xs font-medium transition" title="Chiqish">
+                <i data-lucide="log-out" class="w-3.5 h-3.5 shrink-0"></i>
+                <span class="sidebar-label">Tizimdan chiqish</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MOBIL PASTKI MENYU -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 flex justify-around py-2 z-30">
+        <button onclick="switchTab('inventory')" class="flex flex-col items-center text-[11px] text-cyan-400 gap-1">
+            <i data-lucide="layers" class="w-5 h-5"></i><span>Ombor</span>
+        </button>
+        <button onclick="openAddPhoneModal()" class="flex flex-col items-center text-[11px] text-emerald-400 gap-1">
+            <i data-lucide="plus-circle" class="w-5 h-5"></i><span>Sotib olish</span>
+        </button>
+        <button onclick="openSaleModal()" class="flex flex-col items-center text-[11px] text-white -mt-5">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+        </button>
+        <button onclick="switchTab('analytics')" class="flex flex-col items-center text-[11px] text-amber-400 gap-1">
+            <i data-lucide="sparkles" class="w-5 h-5"></i><span>AI & Balans</span>
+        </button>
+        <button onclick="openProfileModal()" class="flex flex-col items-center text-[11px] text-slate-400 gap-1">
+            <i data-lucide="user-cog" class="w-5 h-5"></i><span>Profil</span>
+        </button>
+    </nav>
+
+    <!-- ASOSIY KONTENT -->
+    <main id="mainContent" class="flex-1 md:ml-64 p-4 md:p-8 max-w-[1440px] mx-auto w-full transition-all duration-300">
+        
+        <!-- Header (1-rasmdagidek barcha kabinetlarda bir tekis qatorda turishi ta'minlandi) -->
+        <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-8">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                    <h2 class="text-xl lg:text-2xl font-bold whitespace-nowrap" id="pageTitle">Ombor va IMEI Nazorati</h2>
+                    <span id="branchScopeBadge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 whitespace-nowrap shrink-0"></span>
+                </div>
+                <p class="text-xs lg:text-sm text-slate-400 mt-0.5 truncate">Pasport nazorati, kassa va AI biznes tahlil tizimi</p>
+            </div>
+            
+            <div class="flex items-center gap-2.5 flex-wrap xl:flex-nowrap shrink-0">
+                <button onclick="toggleTheme()" class="glass-panel p-2.5 rounded-xl hover:border-cyan-500 transition shrink-0" title="Kunduzgi / Tungi rejim">
+                    <i data-lucide="sun" id="themeIcon" class="w-4 h-4 text-amber-400"></i>
+                </button>
+
+                <div class="glass-panel px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0">
+                    <span class="text-xs text-slate-400 whitespace-nowrap">1$ =</span>
+                    <input type="number" id="exchangeRateInput" onchange="updateExchangeRate()" class="w-16 bg-slate-900/80 border border-slate-700/70 rounded-lg px-1.5 py-1 text-xs font-bold text-emerald-400 text-center focus:outline-none">
+                    <span class="text-xs text-slate-400">UZS</span>
+                </div>
+
+                <button onclick="openAddPhoneModal()" id="addPhoneBtn" class="flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/40 px-3.5 py-2.5 rounded-xl text-xs lg:text-sm font-semibold whitespace-nowrap shrink-0 transition">
+                    <i data-lucide="download" class="w-4 h-4 shrink-0"></i>
+                    <span>Tel Sotib Olish (Kirim)</span>
+                </button>
+                <button onclick="openSaleModal()" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white px-4 py-2.5 rounded-xl text-xs lg:text-sm font-semibold shadow-lg shadow-blue-500/20 whitespace-nowrap shrink-0 transition">
+                    <i data-lucide="zap" class="w-4 h-4 shrink-0"></i>
+                    <span>Tel Sotish (POS)</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI STATISTIKA -->
+        <section id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></section>
+
+        <!-- 1-BO'LIM: OMBOR VA IMEI -->
+        <section id="tab-inventory" class="tab-content space-y-4">
+            <div class="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row gap-3 justify-between">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                    <input type="text" id="searchInput" onkeyup="renderInventory()" placeholder="Model, IMEI, egasining ismi yoki pasport raqamini qidiring..." 
+                        class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-cyan-500">
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <select id="conditionFilter" onchange="renderInventory()" class="bg-slate-900/80 border border-slate-700/80 rounded-xl px-3 py-2 text-sm text-slate-300 focus:outline-none">
+                        <option value="all">Barcha holatlar</option>
+                        <option value="Yangi">Yangi (Upakovka)</option>
+                        <option value="Ideal">Ideal (99%)</option>
+                        <option value="Yaxshi">Yaxshi (B/U)</option>
+                    </select>
+                    <select id="branchFilter" onchange="renderInventory()" class="bg-slate-900/80 border border-slate-700/80 rounded-xl px-3 py-2 text-sm text-slate-300 focus:outline-none">
+                        <option value="all">Barcha filiallar</option>
+                        <option value="Asosiy filial">Asosiy filial</option>
+                        <option value="2-filial (Markaz)">2-filial (Markaz)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-xs uppercase text-slate-400 bg-slate-900/40">
+                                <th class="py-3.5 px-4">Qurilma & Izoh</th>
+                                <th class="py-3.5 px-4">IMEI / Region</th>
+                                <th class="py-3.5 px-4">Kimdan olingan (Pasport)</th>
+                                <th class="py-3.5 px-4">Holati & Filial</th>
+                                <th class="py-3.5 px-4 admin-only">Tan Narxi</th>
+                                <th class="py-3.5 px-4">Sotuv Narxi</th>
+                                <th class="py-3.5 px-4 text-right">Amal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2-BO'LIM: SO'ROVLAR MARKAZI -->
+        <section id="tab-approvals" class="tab-content hidden space-y-4">
+            <div class="glass-panel p-5 rounded-2xl">
+                <h3 class="text-lg font-bold mb-1">Xodimlar yuborgan amaliyot so'rovlari</h3>
+                <p class="text-xs text-slate-400">Xodimlarning telefon sotib olish (kirim) va sotish (chiqim) amaliyotlari Admin tasdig'idan o'tadi</p>
+            </div>
+            <div id="approvalsList" class="space-y-3"></div>
+        </section>
+
+        <!-- 3-BO'LIM: SOTUVLAR TARIXI -->
+        <section id="tab-sales" class="tab-content hidden">
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-xs uppercase text-slate-400 bg-slate-900/40">
+                                <th class="py-3.5 px-4">Chek & Vaqt</th>
+                                <th class="py-3.5 px-4">Qurilma & Sotuv Holati</th>
+                                <th class="py-3.5 px-4">Xaridor (Pasport / Tel)</th>
+                                <th class="py-3.5 px-4">Kimdan olingan edi</th>
+                                <th class="py-3.5 px-4">Summa</th>
+                                <th class="py-3.5 px-4 admin-only">Sof Foyda</th>
+                                <th class="py-3.5 px-4 text-right">Chek</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTableBody" class="divide-y divide-slate-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4-BO'LIM: NASIYA VA QARZLAR -->
+        <section id="tab-debts" class="tab-content hidden">
+            <div id="debtsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- 5-BO'LIM: STATISTIKA, KIRIM-CHIQIM & AI TAHLILCHI -->
+        <section id="tab-analytics" class="tab-content hidden space-y-6">
+            <!-- AI BIZNES TAHLILCHI PANELI -->
+            <div class="glass-panel p-6 rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-blue-950/40 via-slate-900/80 to-cyan-950/30">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-cyan-400 flex items-center justify-center text-slate-950 shadow-lg">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold flex items-center gap-2">
+                                Gemini AI Biznes Tahlilchi
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 uppercase">Jonli Tahlil</span>
+                            </h3>
+                            <p class="text-xs text-slate-400">Sizning javobgarlik hududingizdagi raqamlar asosida avtomatik xulosa</p>
+                        </div>
+                    </div>
+                    <button onclick="renderAnalytics()" class="text-xs bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 px-3.5 py-2 rounded-xl font-semibold transition flex items-center gap-1.5 self-start">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Qayta tahlil qilish
+                    </button>
+                </div>
+                <div id="aiInsightsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed"></div>
+            </div>
+
+            <!-- Moliyaviy Kirim-Chiqim Balans Kartochkalari -->
+            <div id="financialBalanceCards" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Chiqimlar (Ham Admin, ham Xodim o'z filialiga chiqim yoza oladi!) -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold flex items-center gap-2">
+                            <i data-lucide="arrow-down-circle" class="w-4 h-4 text-rose-400"></i> Chiqimlar (Xarajatlar daftari)
+                        </h3>
+                        <button onclick="openExpenseModal()" class="text-xs bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">
+                            + Chiqim kiritish
+                        </button>
+                    </div>
+                    <div id="expensesList" class="space-y-2.5 max-h-64 overflow-y-auto"></div>
+                </div>
+
+                <!-- Kirimlar tarkibi -->
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-base font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-cyan-400"></i> Kirimlar tarkibi (To'lov turlari)
+                    </h3>
+                    <div id="paymentStatsContainer" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- Audit Log -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <h3 class="text-base font-bold mb-4 flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i> Harakatlar Jurnali
+                </h3>
+                <div id="auditLogList" class="space-y-2.5 max-h-72 overflow-y-auto pr-2"></div>
+            </div>
+        </section>
+
+        <!-- 6-BO'LIM: XODIMLAR & FAOLLIK NAZORATI (Faqat Admin) -->
+        <section id="tab-staff" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-5 rounded-2xl">
+                <div>
+                    <h3 class="text-lg font-bold">Xodimlar boshqaruvi va Ilovadagi Faollik Vaqti</h3>
+                    <p class="text-xs text-slate-400">Kim qachon kirgani, necha daqiqa ishlagani va sotuv KPI ko'rsatkichlari</p>
+                </div>
+                <button onclick="openAddStaffModal()" class="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg transition">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span>Yangi xodim qo'shish</span>
+                </button>
+            </div>
+            <div id="staffKpiList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+    </main>
+
+    <!-- MODAL 1: TELEFON SOTIB OLISH (KIRIM + EGASINING PASPORTI) -->
+    <div id="addPhoneModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="glass-panel w-full max-w-2xl rounded-2xl p-6 border border-slate-700 my-8">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="text-lg font-bold">Telefon sotib olish va Omborga kirim</h3>
+                    <p class="text-xs text-slate-400">Qurilma ma'lumotlari va sotib olinayotgan shaxs pasportini kiriting</p>
+                </div>
+                <button onclick="closeModal('addPhoneModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="addPhoneForm" class="space-y-4">
+                <!-- Brend va Model -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Brend</label>
+                        <select id="pBrand" onchange="populateModelsByBrand()" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                            <option value="Apple">Apple (iPhone)</option>
+                            <option value="Samsung">Samsung Galaxy</option>
+                            <option value="Xiaomi / Redmi">Xiaomi / Redmi / Poco</option>
+                            <option value="Honor">Honor</option>
+                            <option value="Google Pixel">Google Pixel</option>
+                            <option value="Boshqa">Boshqa brend...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Model</label>
+                        <select id="pModelSelect" onchange="checkCustomModel()" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm"></select>
+                        <input type="text" id="pCustomModel" placeholder="Model nomini yozing..." class="hidden w-full mt-1.5 bg-slate-900 border border-cyan-500/50 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <!-- Texnik xususiyatlar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Xotira</label>
+                        <select id="pStorage" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-sm">
+                            <option value="6/128 GB">6/128 GB</option>
+                            <option value="8/128 GB">8/128 GB</option>
+                            <option value="8/256 GB" selected>8/256 GB</option>
+                            <option value="12/256 GB">12/256 GB</option>
+                            <option value="12/512 GB">12/512 GB</option>
+                            <option value="16/1 TB">16/1 TB</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Rangi</label>
+                        <select id="pColor" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-sm">
+                            <option value="Black / Midnight">Black</option>
+                            <option value="Natural Titanium">Natural Titanium</option>
+                            <option value="White / Silver">White / Silver</option>
+                            <option value="Blue / Gold">Blue / Gold</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">IMEI (15 raqam)</label>
+                        <input type="text" id="pImei" maxlength="15" minlength="15" placeholder="356789000000000" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-sm font-mono text-cyan-300">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">AKB (%) & Holat</label>
+                        <div class="flex gap-1 mt-1">
+                            <input type="number" id="pBattery" value="95" min="50" max="100" required class="w-16 bg-slate-900 border border-slate-700 rounded-xl px-2 py-2 text-sm">
+                            <select id="pCondition" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-1.5 py-2 text-xs">
+                                <option value="Yangi (Upakovka)">Yangi</option>
+                                <option value="Ideal (99%)" selected>Ideal</option>
+                                <option value="Yaxshi">Yaxshi</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KIMDAN SOTIB OLINDI? (PASPORT VA TELEFON NAZORATI) -->
+                <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2.5">
+                    <p class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                        <i data-lucide="shield-alert" class="w-4 h-4"></i> Telefon egasining shaxsiy ma'lumotlari (Xavfsizlik uchun majburiy):
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <input type="text" id="pSellerName" placeholder="Egasining F.I.Sh." required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                        <input type="text" id="pSellerPhone" placeholder="Tel: +998 90 123-45-67" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                        <input type="text" id="pSellerPassport" placeholder="Pasport: AD 1234567" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono uppercase">
+                    </div>
+                </div>
+
+                <!-- Izoh va Rasm -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Texnik holat izohi</label>
+                        <input type="text" id="pNote" placeholder="Ustada bo'lmagan, korobka bor..." class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="photoPreviewBox" class="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                            <i data-lucide="camera" class="w-5 h-5 text-slate-500"></i>
+                        </div>
+                        <input type="file" accept="image/*" onchange="previewDeviceImage(event)" class="text-xs text-slate-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-blue-600/20 file:text-cyan-400 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Narxlar va Filial -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Olingan narx ($)</label>
+                        <input type="number" id="pCost" oninput="calcIntakeProfit()" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-amber-400">Min. chegara ($)</label>
+                        <input type="number" id="pMin" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-400">
+                    </div>
+                    <div>
+                        <label class="text-xs text-emerald-400">Sotuv narxi ($)</label>
+                        <input type="number" id="pSell" oninput="calcIntakeProfit()" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-emerald-400">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Filial</label>
+                        <select id="pBranch" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                            <option value="Asosiy filial">Asosiy filial</option>
+                            <option value="2-filial (Markaz)">2-filial (Markaz)</option>
+                        </select>
+                    </div>
+                </div>
+                <p id="intakeProfitPreview" class="text-xs text-emerald-400 font-medium text-right"></p>
+
+                <button type="submit" id="intakeSubmitBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold py-3 rounded-xl">
+                    Omborga kirim qilish
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SIFATLI SOTUV OYNASI (XARIDOR PASPORTI & SOTUV HOLATI) -->
+    <div id="saleModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="glass-panel w-full max-w-xl rounded-2xl p-6 border border-slate-700 my-8">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="text-lg font-bold">Qurilma sotish va Kafolat rasmiylashtirish</h3>
+                    <p class="text-xs text-slate-400">Xaridor ma'lumotlari va sotuv paytidagi holatni belgilang</p>
+                </div>
+                <button onclick="closeModal('saleModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="saleForm" class="space-y-3.5">
+                <div>
+                    <label class="text-xs text-slate-400">Sotilayotgan qurilma</label>
+                    <select id="salePhoneSelect" onchange="updateSalePrice()" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm"></select>
+                    <div id="selectedDeviceDetails" class="text-xs text-cyan-300 bg-slate-900/70 p-2 rounded-lg mt-1.5 border border-slate-800"></div>
+                </div>
+
+                <!-- Sotuv paytidagi holat va Kafolat -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Qay holatda sotilmoqda?</label>
+                        <select id="saleConditionNote" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs">
+                            <option value="Plomba ochilmagan yangi (Full)">Plomba ochilmagan yangi (Full)</option>
+                            <option value="Ideal holatda, tekshirib berildi">Ideal holatda, tekshirib berildi</option>
+                            <option value="Korobka + kabel bilan topshirildi">Korobka + kabel bilan topshirildi</option>
+                            <option value="Faqat telefon o'zi (B/U)">Faqat telefon o'zi (B/U)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Do'kon kafolati</label>
+                        <select id="warrantyDays" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs">
+                            <option value="30">1 oy (30 kun) rasmiy kafolat</option>
+                            <option value="90">3 oy (90 kun) kafolat</option>
+                            <option value="365">1 yil kafolat</option>
+                            <option value="0">Kafolatsiz (Joyida tekshirildi)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Xaridor ma'lumotlari -->
+                <div class="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 space-y-2.5">
+                    <p class="text-xs font-bold text-cyan-400">Sotib olayotgan mijoz (Xaridor) ma'lumotlari:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <input type="text" id="custName" placeholder="Xaridor F.I.Sh." required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                        <input type="text" id="custPhone" placeholder="Tel: +998 91 234-56-78" required class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                        <input type="text" id="custPassport" placeholder="Pasport (ixtiyoriy)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono uppercase">
+                    </div>
+                </div>
+
+                <!-- Narx va To'lov turi -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Kelishilgan narx ($)</label>
+                        <input type="number" id="finalSellPrice" oninput="calculateUzs()" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-emerald-400">
+                        <p id="uzsEquivalent" class="text-[11px] text-cyan-400 mt-1"></p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">To'lov turi</label>
+                        <select id="paymentType" onchange="toggleExtraFields()" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                            <option value="Naqd">Naqd pul ($ / UZS)</option>
+                            <option value="Karta / Terminal">Karta / Terminal</option>
+                            <option value="Trade-in (Barter)">Trade-in (Eski telefon + Pul)</option>
+                            <option value="Nasiya">Nasiya (Qarzga)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Trade-in -->
+                <div id="tradeInFields" class="hidden p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 space-y-2">
+                    <p class="text-xs font-semibold text-purple-300">Mijoz berayotgan eski telefon (Omborga tushadi):</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="tradeModel" placeholder="Model" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs">
+                        <input type="text" id="tradeImei" maxlength="15" placeholder="IMEI" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono">
+                        <input type="number" id="tradeValue" placeholder="Narxi ($)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-400">
+                    </div>
+                </div>
+
+                <!-- Nasiya -->
+                <div id="debtFields" class="hidden grid grid-cols-2 gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30">
+                    <div>
+                        <label class="text-xs text-rose-300">Boshlang'ich to'lov ($)</label>
+                        <input type="number" id="paidAmount" value="0" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-rose-300">Qaytarish sanasi</label>
+                        <input type="date" id="dueDate" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm">
+                    </div>
+                </div>
+
+                <div id="priceWarning" class="hidden text-xs text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/30"></div>
+                <button type="submit" id="saleSubmitBtn" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold py-3 rounded-xl transition">Sotuvni tasdiqlash</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PROFIL SOZLAMALARI (Admin Loginni ham o'zgartira oladi!) -->
+    <div id="profileModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-slate-700">
+            <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-800">
+                <h3 class="text-lg font-bold">Shaxsiy Profil Sozlamalari</h3>
+                <button onclick="closeModal('profileModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="profileForm" class="space-y-4">
+                <div class="flex items-center gap-4">
+                    <div id="profAvatarPreview" class="w-16 h-16 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center text-xl font-bold text-cyan-400 overflow-hidden shrink-0">A</div>
+                    <div>
+                        <label class="block text-xs font-semibold text-cyan-400 mb-1">Profil rasmini yuklash</label>
+                        <input type="file" accept="image/*" onchange="previewProfileAvatar(event)" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:bg-blue-600/20 file:text-cyan-400 cursor-pointer">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Ism va Familiya</label>
+                    <input type="text" id="profName" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Telefon raqam</label>
+                    <input type="text" id="profPhone" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Login <span id="loginEditHint" class="text-cyan-400"></span></label>
+                        <input type="text" id="profUsername" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Parol</label>
+                        <input type="text" id="profPassword" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-400">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold py-2.5 rounded-xl">Saqlash</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: YANGI XODIM QO'SHISH -->
+    <div id="addStaffModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">Yangi xodim qo'shish</h3>
+                <button onclick="closeModal('addStaffModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="addStaffForm" class="space-y-3.5">
+                <div>
+                    <label class="text-xs text-slate-400">To'liq ismi</label>
+                    <input type="text" id="stName" placeholder="Azizbek (Sotuvchi)" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Telefon raqami</label>
+                    <input type="text" id="stPhone" placeholder="+998 90 123-45-67" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Login</label>
+                        <input type="text" id="stUsername" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Parol</label>
+                        <input type="text" id="stPassword" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Javobgarlik filiali</label>
+                        <select id="stBranch" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                            <option value="Asosiy filial">Asosiy filial</option>
+                            <option value="2-filial (Markaz)">2-filial (Markaz)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Bonus (%)</label>
+                        <input type="number" step="0.5" id="stBonus" value="2" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-400">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl">Qo'shish</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: CHIQIM (XARAJAT) YOZISH -->
+    <div id="expenseModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">Chiqim (xarajat) kiritish</h3>
+                <button onclick="closeModal('expenseModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="expenseForm" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400">Xarajat sababi (masalan: Obed, Kuryer, Ijara)</label>
+                    <input type="text" id="expTitle" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Summa ($)</label>
+                    <input type="number" id="expAmount" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-rose-400 font-bold">
+                </div>
+                <button type="submit" class="w-full bg-rose-600 text-white font-bold py-2.5 rounded-xl">Chiqimni saqlash</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6: KAFOLAT CHEKI -->
+    <div id="receiptModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white text-slate-900 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div id="receiptPrintArea" class="space-y-4">
+                <div class="text-center border-b-2 border-dashed border-slate-300 pb-4">
+                    <h3 class="font-extrabold text-xl tracking-tight">PHONECONTROL PRO</h3>
+                    <p class="text-xs text-slate-500">Rasmiy Savdo va Kafolat Taloni</p>
+                    <p class="text-xs font-mono mt-1 text-slate-700" id="recNo"></p>
+                </div>
+                <div class="space-y-2 text-sm" id="receiptBody"></div>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Chop etish / PDF
+                </button>
+                <button onclick="closeModal('receiptModal')" class="px-4 py-2.5 bg-slate-200 text-slate-800 rounded-xl text-sm font-semibold">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: RASMNI KATTALASHTIRISH -->
+    <div id="imageZoomModal" onclick="closeModal('imageZoomModal')" class="fixed inset-0 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4 z-50 cursor-zoom-out">
+        <div class="max-w-lg w-full glass-panel p-4 rounded-2xl border border-slate-700 text-center" onclick="event.stopPropagation()">
+            <img id="zoomedImg" src="" class="w-full max-h-[70vh] object-contain rounded-xl mx-auto mb-3">
+            <p id="zoomedCaption" class="text-sm font-semibold"></p>
+            <p id="zoomedNote" class="text-xs text-slate-400 mt-1"></p>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

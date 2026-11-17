@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhoneControl Enterprise — Tizimga kirish</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+    <div class="absolute top-[-15%] left-[-10%] w-[28rem] h-[28rem] bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-[-15%] right-[-10%] w-[28rem] h-[28rem] bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Cho'zinchoq (Tall) Zamonaviy Login Kartochkasi -->
+    <div class="glass-panel w-full max-w-[420px] min-h-[560px] rounded-3xl px-8 py-12 shadow-2xl relative z-10 flex flex-col justify-between border border-slate-700/70">
+        
+        <!-- Yuqori qism: Emblema va Sarlavha -->
+        <div class="flex flex-col items-center text-center mt-2">
+            <svg width="205" height="62" viewBox="0 0 220 68" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-4">
+                <rect x="10" y="8" width="40" height="40" rx="11" fill="url(#logoGrad)"/>
+                <path d="M30 16H30.01M25 14H35C36.1 14 37 14.9 37 16V38C37 39.1 36.1 40 35 40H25C23.9 40 23 39.1 23 38V16C23 14.9 23.9 14 25 14Z" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+                <text x="60" y="35" fill="currentColor" font-family="Inter, sans-serif" font-weight="800" font-size="22" letter-spacing="-0.5">PhoneControl</text>
+                <path d="M64 47C98 61 150 61 187 46" stroke="#F59E0B" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M181 42L189 45.5L184 53" stroke="#F59E0B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <defs>
+                    <linearGradient id="logoGrad" x1="10" y1="8" x2="50" y2="48" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#2563EB"/>
+                        <stop offset="1" stop-color="#06B6D4"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <h2 class="text-lg font-bold tracking-tight">Xush kelibsiz!</h2>
+            <p class="text-slate-400 text-xs mt-1 max-w-xs leading-relaxed">
+                Smartfon savdosi, pasport nazorati va moliyaviy boshqaruv tizimiga kiring
+            </p>
+        </div>
+
+        <!-- O'rta qism: Forma -->
+        <div class="my-6">
+            <div id="errorBox" class="hidden mb-4 p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
+                <span id="errorText">Login yoki parol noto'g'ri kiritildi!</span>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Foydalanuvchi Logini</label>
+                    <div class="relative">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-4 top-3.5"></i>
+                        <input type="text" id="username" placeholder="Loginingizni kiriting" required
+                            class="w-full bg-slate-900/80 border border-slate-700 rounded-xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:border-cyan-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Maxfiy Parol</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-4 top-3.5"></i>
+                        <input type="password" id="password" placeholder="••••••••" required
+                            class="w-full bg-slate-900/80 border border-slate-700 rounded-xl py-3 pl-11 pr-11 text-sm focus:outline-none focus:border-cyan-500 transition">
+                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-3.5 text-slate-400 hover:text-cyan-400">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                    class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/25 transition duration-200 flex items-center justify-center gap-2 mt-4">
+                    <span>Tizimga kirish</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Pastki qism: Xavfsizlik belgisi -->
+        <div class="text-center pt-4 border-t border-slate-800/70">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Enterprise Security • AI Analytics Enabled</span>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script>
+        if (localStorage.getItem('pc_theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+        }
+        lucide.createIcons();
+
+        function togglePassword() {
+            const passInput = document.getElementById('password');
+            passInput.type = passInput.type === 'password' ? 'text' : 'password';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const uname = document.getElementById('username').value.trim().toLowerCase();
+            const pass = document.getElementById('password').value.trim();
+            const errorBox = document.getElementById('errorBox');
+            const errorText = document.getElementById('errorText');
+
+            const data = getStoreData();
+            const userIdx = data.users.findIndex(u => u.username.toLowerCase() === uname && u.password === pass);
+
+            if (userIdx !== -1) {
+                const foundUser = data.users[userIdx];
+                if (foundUser.active === false) {
+                    errorText.textContent = "Sizning hisobingiz Admin tomonidan bloklangan!";
+                    errorBox.classList.remove('hidden');
+                    return;
+                }
+                // Kirish vaqtini qayd etish
+                const nowStr = new Date().toLocaleString('uz-UZ', { hour12: false }).slice(0, 17);
+                data.users[userIdx].lastLogin = nowStr;
+                data.users[userIdx].isOnline = true;
+                saveStoreData({ users: data.users });
+
+                localStorage.setItem('pc_user_id', String(foundUser.id));
+                localStorage.setItem('pc_session_start', String(Date.now()));
+                window.location.href = 'dashboard.html';
+            } else {
+                errorText.textContent = "Login yoki parol noto'g'ri kiritildi!";
+                errorBox.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

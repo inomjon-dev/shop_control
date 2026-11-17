@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-main: #040711;
+    /* Chap bar va panellar uchun ultra-shaffof qatlam */
+    --bg-sidebar: rgba(15, 23, 42, 0.24);
+    --bg-panel: rgba(22, 33, 58, 0.28);
+    --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-glass: rgba(255, 255, 255, 0.16);
+    --border-top-highlight: rgba(255, 255, 255, 0.28);
+}
+
+html.light {
+    --bg-main: #DCE5F2;
+    --bg-sidebar: rgba(255, 255, 255, 0.32);
+    --bg-panel: rgba(255, 255, 255, 0.38);
+    --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.28) 100%);
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --border-glass: rgba(255, 255, 255, 0.75);
+    --border-top-highlight: #FFFFFF;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-main);
+    /* Shaffoflik sezilishi uchun orqa fondagi ko'p qatlamli gradient va nurlar */
+    background-image: 
+        radial-gradient(circle at 8% 18%, rgba(37, 99, 235, 0.42) 0%, transparent 38%),
+        radial-gradient(circle at 22% 78%, rgba(6, 182, 212, 0.32) 0%, transparent 42%),
+        radial-gradient(circle at 78% 22%, rgba(59, 130, 246, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.24) 0%, transparent 42%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+}
+
+html.light body {
+    background-image: 
+        radial-gradient(circle at 8% 18%, rgba(59, 130, 246, 0.35) 0%, transparent 42%),
+        radial-gradient(circle at 25% 80%, rgba(6, 182, 212, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 82% 20%, rgba(99, 102, 241, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.22) 0%, transparent 42%);
+}
+
+/* Chap Sidebar — Eng yuqori darajadagi shaffof oyna */
+aside#mainSidebar {
+    background: var(--bg-sidebar) !important;
+    backdrop-filter: blur(36px) saturate(210%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(210%) !important;
+    border-right: 1px solid var(--border-glass) !important;
+    box-shadow: inset -1px 0 0 0 rgba(255, 255, 255, 0.12), 12px 0 40px rgba(0, 0, 0, 0.28);
+}
+
+/* Asosiy Glass Panellar */
+.glass-panel {
+    background: var(--bg-panel) !important;
+    backdrop-filter: blur(30px) saturate(195%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(195%) !important;
+    border: 1px solid var(--border-glass) !important;
+    border-top-color: var(--border-top-highlight) !important;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+/* KPI va Ichki Kartochkalar (iPhone Control Center uslubi) */
+.glass-card {
+    background: var(--bg-card) !important;
+    backdrop-filter: blur(26px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(26px) saturate(190%) !important;
+    border: 1px solid var(--border-glass) !important;
+    border-top: 1px solid var(--border-top-highlight) !important;
+    border-left: 1px solid var(--border-top-highlight) !important;
+    box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.22);
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-card:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+    border-color: rgba(56, 189, 248, 0.55) !important;
+    transform: translateY(-2px);
+}
+
+/* Modal oynalar ochilganda o'qilishi oson bo'lishi uchun sal quyuqroq shaffoflik */
+#addPhoneModal > div,
+#saleModal > div,
+#profileModal > div,
+#addStaffModal > div,
+#expenseModal > div {
+    background: rgba(13, 20, 38, 0.78) !important;
+    backdrop-filter: blur(36px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
+}
+
+html.light #addPhoneModal > div,
+html.light #saleModal > div,
+html.light #profileModal > div,
+html.light #addStaffModal > div,
+html.light #expenseModal > div {
+    background: rgba(255, 255, 255, 0.86) !important;
+}
+
+/* Yig'iluvchi Sidebar (Collapsed State) */
+aside.sidebar-collapsed {
+    width: 5.25rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
+aside.sidebar-collapsed .sidebar-header-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+aside.sidebar-collapsed .sidebar-label,
+aside.sidebar-collapsed .logo-text-group,
+aside.sidebar-collapsed .profile-text-group {
+    display: none !important;
+}
+
+aside.sidebar-collapsed .nav-btn {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+aside.sidebar-collapsed .profile-trigger {
+    justify-content: center !important;
+    padding: 0.35rem !important;
+}
+
+main.main-expanded {
+    margin-left: 5.25rem !important;
+}
+
+/* Light mode matn va input moslashuvlari */
+html.light .text-white { color: #0F172A !important; }
+html.light .text-slate-100, html.light .text-slate-200 { color: #1E293B !important; }
+html.light .text-slate-300 { color: #334155 !important; }
+html.light .text-slate-400 { color: #64748B !important; }
+html.light .bg-slate-900, html.light .bg-slate-900\/80, html.light .bg-slate-900\/75, html.light .bg-slate-900\/70, html.light .bg-slate-900\/60, html.light .bg-slate-900\/40 {
+    background-color: rgba(255, 255, 255, 0.55) !important;
+    color: #0F172A !important;
+}
+html.light .bg-slate-800, html.light .bg-slate-800\/80, html.light .bg-slate-800\/70, html.light .bg-slate-800\/60 {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+    color: #0F172A !important;
+}
+html.light .border-slate-800, html.light .border-slate-700 {
+    border-color: rgba(148, 163, 184, 0.35) !important;
+}
+html.light button.bg-gradient-to-r, html.light button.bg-emerald-600, html.light button.bg-rose-600, html.light button.bg-slate-900 {
+    color: #FFFFFF !important;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 4px; }
